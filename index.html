@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laplace Transform Calculator</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100%;
+      width: 100%;
+    }
+
+    .calculator-container {
+      width: 100%;
+      min-height: 100%;
+      padding: 2.5rem 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .calculator-card {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .calculator-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .calculator-header h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .calculator-header p {
+      margin: 0;
+      opacity: 0.95;
+      font-size: 1rem;
+    }
+
+    .calculator-body {
+      padding: 2rem;
+    }
+
+    .transform-type-selector {
+      margin-bottom: 2rem;
+    }
+
+    .transform-type-selector label {
+      display: block;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+      color: #333;
+      font-size: 1rem;
+    }
+
+    .transform-type-selector select {
+      width: 100%;
+      padding: 0.875rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    .transform-type-selector select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .input-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-section label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #333;
+      font-size: 0.95rem;
+    }
+
+    .input-section input {
+      width: 100%;
+      padding: 0.875rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .input-section input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .calculate-button {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-bottom: 2rem;
+    }
+
+    .calculate-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .calculate-button:active {
+      transform: translateY(0);
+    }
+
+    .result-section {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      display: none;
+    }
+
+    .result-section.show {
+      display: block;
+    }
+
+    .result-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 1rem;
+    }
+
+    .result-content {
+      background: white;
+      padding: 1.25rem;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .result-formula {
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 1rem;
+      font-family: 'Courier New', monospace;
+      word-break: break-word;
+    }
+
+    .result-steps {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .step {
+      margin-bottom: 0.75rem;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .step-number {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+
+    .examples-section {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 2px solid #e0e0e0;
+    }
+
+    .examples-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+    .example-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .example-button {
+      padding: 0.75rem;
+      background: white;
+      border: 2px solid #667eea;
+      color: #667eea;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .example-button:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .error-message {
+      background: #fee;
+      border-left: 4px solid #e53e3e;
+      padding: 1rem;
+      border-radius: 8px;
+      color: #c53030;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="calculator-container">
+   <div class="calculator-card">
+    <div class="calculator-header">
+     <h1 id="main-title">Laplace Transform Calculator</h1>
+     <p id="instructions-text">Select transform type, enter your function, and get step-by-step solutions</p>
+    </div>
+    <div class="calculator-body">
+     <div class="transform-type-selector"><label for="transform-type">Transform Type:</label> <select id="transform-type"> <option value="basic">Basic Functions (t^n, e^at, sin, cos)</option> <option value="shifted">Shifted Functions (u(t-a)f(t-a))</option> <option value="derivative">Derivatives (f', f'')</option> <option value="integral">Integrals</option> <option value="multiplication">Multiplication by t^n</option> <option value="division">Division by t</option> <option value="convolution">Convolution</option> <option value="periodic">Periodic Functions</option> </select>
+     </div>
+     <div id="input-container">
+      <div class="input-section"><label for="function-input">Enter Function f(t):</label> <input type="text" id="function-input" placeholder="e.g., t^2, e^(3t), sin(2t), cos(t)">
+      </div>
+      <div class="input-section" id="param-section" style="display: none;"><label for="param-input" id="param-label">Parameter:</label> <input type="text" id="param-input" placeholder="">
+      </div>
+     </div><button class="calculate-button" onclick="calculateTransform()">Calculate Transform</button>
+     <div class="error-message" id="error-message"></div>
+     <div class="result-section" id="result-section">
+      <div class="result-title">
+       Result:
+      </div>
+      <div class="result-content">
+       <div class="result-formula" id="result-formula"></div>
+       <div class="result-steps" id="result-steps"></div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      main_title: "Laplace Transform Calculator",
+      instructions_text: "Select transform type, enter your function, and get step-by-step solutions"
+    };
+
+    const examples = {
+      'basic': [
+        { label: 'L{t²}', func: 't^2', param: '' },
+        { label: 'L{e^(3t)}', func: 'e^(3t)', param: '' },
+        { label: 'L{sin(2t)}', func: 'sin(2t)', param: '' },
+        { label: 'L{cos(4t)}', func: 'cos(4t)', param: '' }
+      ],
+      'shifted': [
+        { label: 'L{u(t-2)e^t}', func: 'e^t', param: '2' },
+        { label: 'L{u(t-1)sin(t)}', func: 'sin(t)', param: '1' },
+        { label: 'L{u(t-3)t²}', func: 't^2', param: '3' }
+      ],
+      'derivative': [
+        { label: "L{f'} for sin(t)", func: 'sin(t)', param: '' },
+        { label: "L{f''} for t²", func: 't^2', param: '' }
+      ],
+      'multiplication': [
+        { label: 'L{t·e^(2t)}', func: 'e^(2t)', param: '1' },
+        { label: 'L{t²·sin(t)}', func: 'sin(t)', param: '2' }
+      ]
+    };
+
+    function updateExamples() {
+      const type = document.getElementById('transform-type').value;
+      const examplesContainer = document.getElementById('example-buttons');
+      examplesContainer.innerHTML = '';
+
+      if (examples[type]) {
+        examples[type].forEach(ex => {
+          const button = document.createElement('button');
+          button.className = 'example-button';
+          button.textContent = ex.label;
+          button.onclick = () => {
+            document.getElementById('function-input').value = ex.func;
+            if (ex.param) {
+              document.getElementById('param-input').value = ex.param;
+            }
+          };
+          examplesContainer.appendChild(button);
+        });
+      }
+    }
+
+    function updateInputFields() {
+      const type = document.getElementById('transform-type').value;
+      const paramSection = document.getElementById('param-section');
+      const paramLabel = document.getElementById('param-label');
+      const paramInput = document.getElementById('param-input');
+
+      if (type === 'shifted') {
+        paramSection.style.display = 'block';
+        paramLabel.textContent = 'Shift value (a):';
+        paramInput.placeholder = 'e.g., 2';
+      } else if (type === 'multiplication') {
+        paramSection.style.display = 'block';
+        paramLabel.textContent = 'Power of t (n):';
+        paramInput.placeholder = 'e.g., 1, 2';
+      } else if (type === 'periodic') {
+        paramSection.style.display = 'block';
+        paramLabel.textContent = 'Period (T):';
+        paramInput.placeholder = 'e.g., 2π';
+      } else {
+        paramSection.style.display = 'none';
+      }
+
+      updateExamples();
+    }
+
+    function showError(message) {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.textContent = message;
+      errorDiv.classList.add('show');
+      document.getElementById('result-section').classList.remove('show');
+    }
+
+    function hideError() {
+      document.getElementById('error-message').classList.remove('show');
+    }
+
+    function calculateTransform() {
+      hideError();
+      
+      const type = document.getElementById('transform-type').value;
+      const funcInput = document.getElementById('function-input').value.trim();
+      const paramInput = document.getElementById('param-input').value.trim();
+
+      if (!funcInput) {
+        showError('Please enter a function');
+        return;
+      }
+
+      try {
+        let result, steps;
+
+        switch(type) {
+          case 'basic':
+            ({ result, steps } = calculateBasic(funcInput));
+            break;
+          case 'shifted':
+            ({ result, steps } = calculateShifted(funcInput, paramInput));
+            break;
+          case 'derivative':
+            ({ result, steps } = calculateDerivative(funcInput));
+            break;
+          case 'integral':
+            ({ result, steps } = calculateIntegral(funcInput));
+            break;
+          case 'multiplication':
+            ({ result, steps } = calculateMultiplication(funcInput, paramInput));
+            break;
+          case 'division':
+            ({ result, steps } = calculateDivision(funcInput));
+            break;
+          case 'convolution':
+            ({ result, steps } = calculateConvolution(funcInput));
+            break;
+          case 'periodic':
+            ({ result, steps } = calculatePeriodic(funcInput, paramInput));
+            break;
+          default:
+            showError('Invalid transform type');
+            return;
+        }
+
+        displayResult(result, steps);
+      } catch (error) {
+        showError('Error calculating transform. Please check your input format.');
+      }
+    }
+
+    function calculateBasic(func) {
+      let result = '';
+      let steps = [];
+
+      if (func.match(/^t\^(\d+)$/)) {
+        const n = parseInt(func.match(/^t\^(\d+)$/)[1]);
+        result = `${factorial(n)}/s^${n + 1}`;
+        steps.push(`Using formula: L{t^n} = n!/s^(n+1)`);
+        steps.push(`For n = ${n}: L{t^${n}} = ${factorial(n)}/s^${n + 1}`);
+      } else if (func.match(/^e\^\((-?\d+)t\)$/)) {
+        const a = func.match(/^e\^\((-?\d+)t\)$/)[1];
+        result = `1/(s - ${a})`;
+        steps.push(`Using formula: L{e^(at)} = 1/(s - a)`);
+        steps.push(`For a = ${a}: L{e^(${a}t)} = 1/(s - ${a})`);
+      } else if (func.match(/^sin\((\d+)t\)$/)) {
+        const a = func.match(/^sin\((\d+)t\)$/)[1];
+        result = `${a}/(s² + ${parseInt(a)**2})`;
+        steps.push(`Using formula: L{sin(at)} = a/(s² + a²)`);
+        steps.push(`For a = ${a}: L{sin(${a}t)} = ${a}/(s² + ${parseInt(a)**2})`);
+      } else if (func.match(/^cos\((\d+)t\)$/)) {
+        const a = func.match(/^cos\((\d+)t\)$/)[1];
+        result = `s/(s² + ${parseInt(a)**2})`;
+        steps.push(`Using formula: L{cos(at)} = s/(s² + a²)`);
+        steps.push(`For a = ${a}: L{cos(${a}t)} = s/(s² + ${parseInt(a)**2})`);
+      } else if (func === 't') {
+        result = '1/s²';
+        steps.push(`Using formula: L{t} = 1/s²`);
+      } else if (func === '1') {
+        result = '1/s';
+        steps.push(`Using formula: L{1} = 1/s`);
+      } else {
+        throw new Error('Unsupported function format');
+      }
+
+      return { result, steps };
+    }
+
+    function calculateShifted(func, a) {
+      if (!a) {
+        throw new Error('Please enter shift value (a)');
+      }
+      
+      const { result: basicResult } = calculateBasic(func);
+      const result = `e^(-${a}s) · ${basicResult}`;
+      
+      const steps = [
+        `Using Second Shifting Theorem: L{u(t-a)f(t-a)} = e^(-as) · L{f(t)}`,
+        `First, find L{${func}}:`,
+        `L{${func}} = ${basicResult}`,
+        `Apply shift with a = ${a}:`,
+        `L{u(t-${a})${func.replace(/t/g, `(t-${a})`)}} = e^(-${a}s) · ${basicResult}`
+      ];
+
+      return { result, steps };
+    }
+
+    function calculateDerivative(func) {
+      const { result: basicResult } = calculateBasic(func);
+      const result = `s · ${basicResult} - f(0)`;
+      
+      const steps = [
+        `Using formula: L{f'(t)} = sF(s) - f(0)`,
+        `First, find L{${func}}:`,
+        `L{${func}} = F(s) = ${basicResult}`,
+        `Therefore: L{f'(t)} = s · ${basicResult} - f(0)`,
+        `For second derivative: L{f''(t)} = s²F(s) - sf(0) - f'(0)`
+      ];
+
+      return { result, steps };
+    }
+
+    function calculateIntegral(func) {
+      const { result: basicResult } = calculateBasic(func);
+      const result = `${basicResult}/s`;
+      
+      const steps = [
+        `Using formula: L{∫f(t)dt} = F(s)/s`,
+        `First, find L{${func}}:`,
+        `L{${func}} = F(s) = ${basicResult}`,
+        `Therefore: L{∫${func}dt} = ${basicResult}/s`
+      ];
+
+      return { result, steps };
+    }
+
+    function calculateMultiplication(func, n) {
+      if (!n) {
+        throw new Error('Please enter power of t (n)');
+      }
+      
+      const { result: basicResult } = calculateBasic(func);
+      const result = `(-1)^${n} · d^${n}/ds^${n}[${basicResult}]`;
+      
+      const steps = [
+        `Using formula: L{t^n · f(t)} = (-1)^n · d^n/ds^n[F(s)]`,
+        `First, find L{${func}}:`,
+        `L{${func}} = F(s) = ${basicResult}`,
+        `Therefore: L{t^${n} · ${func}} = (-1)^${n} · d^${n}/ds^${n}[${basicResult}]`,
+        `This requires taking the ${n}th derivative of F(s) with respect to s`
+      ];
+
+      return { result, steps };
+    }
+
+    function calculateDivision(func) {
+      const { result: basicResult } = calculateBasic(func);
+      const result = `∫[${basicResult}]ds from s to ∞`;
+      
+      const steps = [
+        `Using formula: L{f(t)/t} = ∫F(s)ds from s to ∞`,
+        `First, find L{${func}}:`,
+        `L{${func}} = F(s) = ${basicResult}`,
+        `Therefore: L{${func}/t} = ∫[${basicResult}]ds from s to ∞`
+      ];
+
+      return { result, steps };
+    }
+
+    function calculateConvolution(func) {
+      const result = `F(s) · G(s)`;
+      
+      const steps = [
+        `Using Convolution Theorem: L{f(t) * g(t)} = F(s) · G(s)`,
+        `Where f(t) * g(t) = ∫f(τ)g(t-τ)dτ from 0 to t`,
+        `Find L{f(t)} and L{g(t)} separately, then multiply`
+      ];
+
+      return { result, steps };
+    }
+
+    function calculatePeriodic(func, T) {
+      if (!T) {
+        throw new Error('Please enter period (T)');
+      }
+      
+      const result = `[1/(1 - e^(-Ts))] · ∫[f(t)e^(-st)]dt from 0 to T`;
+      
+      const steps = [
+        `Using formula for periodic functions with period T = ${T}:`,
+        `L{f(t)} = [1/(1 - e^(-Ts))] · ∫f(t)e^(-st)dt from 0 to T`,
+        `Evaluate the integral over one period [0, ${T}]`,
+        `Then multiply by 1/(1 - e^(-${T}s))`
+      ];
+
+      return { result, steps };
+    }
+
+    function factorial(n) {
+      if (n <= 1) return 1;
+      return n * factorial(n - 1);
+    }
+
+    function displayResult(result, steps) {
+      document.getElementById('result-formula').textContent = `L{f(t)} = ${result}`;
+      
+      const stepsContainer = document.getElementById('result-steps');
+      stepsContainer.innerHTML = '<strong>Solution Steps:</strong>';
+      steps.forEach((step, index) => {
+        const stepDiv = document.createElement('div');
+        stepDiv.className = 'step';
+        stepDiv.innerHTML = `<span class="step-number">${index + 1}</span>${step}`;
+        stepsContainer.appendChild(stepDiv);
+      });
+
+      document.getElementById('result-section').classList.add('show');
+    }
+
+    async function onConfigChange(config) {
+      document.getElementById('main-title').textContent = config.main_title || defaultConfig.main_title;
+      document.getElementById('instructions-text').textContent = config.instructions_text || defaultConfig.instructions_text;
+    }
+
+    document.getElementById('transform-type').addEventListener('change', updateInputFields);
+    updateInputFields();
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['main_title', config.main_title || defaultConfig.main_title],
+          ['instructions_text', config.instructions_text || defaultConfig.instructions_text]
+        ])
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a5bad73c7e3069c',t:'MTc2NDM1MTkxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
