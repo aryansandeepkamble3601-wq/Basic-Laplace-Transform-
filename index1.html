@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Basic Laplace Transform</title>
+  <meta name="description" content="Basic Laplace Transform—get step-by-step solutions for Laplace transforms online.">
+  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/4/4c/Laplace_Transform_Icon.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      min-height: 100vh;
+    }
+    .calculator-container {
+      width: 100%;
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem;
+    }
+    .calculator-card {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+      overflow: hidden;
+    }
+    .calculator-header {
+      background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+    .calculator-header h1 {
+      margin: 0 0 .5rem 0;
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+    .calculator-header p {
+      margin: 0;
+      font-size: 1.2rem;
+      opacity: .95;
+    }
+    .calculator-body {
+      padding: 2rem;
+    }
+    .transform-type-selector {
+      margin-bottom: 2rem;
+    }
+    .transform-type-selector label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: .75rem;
+    }
+    .transform-type-selector select {
+      width: 100%;
+      padding: .875rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color .3s;
+      background: white;
+    }
+    .transform-type-selector select:focus {border-color: #667eea;}
+    .input-section {margin-bottom: 1.5rem;}
+    .input-section label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: .5rem;
+    }
+    .input-section input {
+      width: 100%;
+      padding: .875rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color .3s;
+    }
+    .input-section input:focus {border-color: #667eea;}
+    .calculate-button {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 2rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .calculate-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102,126,234,0.22);
+    }
+    .result-section {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      display: none;
+    }
+    .result-section.show {display:block;}
+    .result-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 1rem;
+    }
+    .result-content {
+      background: white;
+      padding: 1.25rem;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    .result-formula {
+      font-size: 1.13rem;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 1.2rem;
+      background: #f3f3fb;
+      border-radius: 8px;
+      padding: .65em 1em;
+      word-break: break-word;
+      color: #324;
+      border-bottom: 1px solid #ecebee;
+    }
+    .result-steps {
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+    .step {
+      margin-bottom: .8rem;
+      color:#444;
+      padding-left: 1.6rem;
+      position: relative;
+    }
+    .step-number {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-right: 0.9rem;
+      position: absolute;
+      left: 0;
+      top: 1px;
+    }
+    .error-message {
+      background: #fee;
+      border-left: 4px solid #e53e3e;
+      padding: 1rem;
+      border-radius: 8px;
+      color: #c53030;
+      margin-top: 1rem;
+      display: none;
+    }
+    .error-message.show {display:block;}
+    @media (max-width:600px){
+      .calculator-card{max-width:100%;}
+      .calculator-body{padding:1rem;}
+      .calculator-header{padding:1rem;}
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator-container">
+    <div class="calculator-card">
+      <div class="calculator-header">
+        <h1 id="main-title">Basic Laplace Transform</h1>
+        <p id="instructions-text">Select transform type, enter your function, and get step-by-step solutions.</p>
+      </div>
+      <div class="calculator-body">
+        <div class="transform-type-selector">
+          <label for="transform-type">Transform Type:</label>
+          <select id="transform-type">
+            <option value="basic">Basic Functions (t^n, e^at, sin, cos)</option>
+            <option value="shifted">Shifted Functions (u(t-a)f(t-a))</option>
+            <option value="derivative">Derivatives (f', f'')</option>
+            <option value="integral">Integrals</option>
+            <option value="multiplication">Multiplication by t^n</option>
+            <option value="division">Division by t</option>
+            <option value="convolution">Convolution</option>
+            <option value="periodic">Periodic Functions</option>
+          </select>
+        </div>
+        <div id="input-container">
+          <div class="input-section">
+            <label for="function-input">Enter Function f(t):</label>
+            <input type="text" id="function-input" placeholder="e.g., t^2, e^(3t), sin(2t), cos(t)">
+          </div>
+          <div class="input-section" id="param-section" style="display:none;">
+            <label for="param-input" id="param-label">Parameter:</label>
+            <input type="text" id="param-input" placeholder="">
+          </div>
+        </div>
+        <button class="calculate-button" onclick="calculateTransform()">Calculate Transform</button>
+        <div class="error-message" id="error-message"></div>
+        <div class="result-section" id="result-section">
+          <div class="result-title">Result:</div>
+          <div class="result-content">
+            <div class="result-formula" id="result-formula"></div>
+            <div class="result-steps" id="result-steps"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>
+function updateInputFields() {
+  const type = document.getElementById('transform-type').value;
+  const paramSection = document.getElementById('param-section');
+  const paramLabel = document.getElementById('param-label');
+  const paramInput = document.getElementById('param-input');
+  if (type === 'shifted') {
+    paramSection.style.display = 'block'; paramLabel.textContent='Shift value (a):'; paramInput.placeholder='e.g., 2';
+  } else if (type==='multiplication') {
+    paramSection.style.display='block'; paramLabel.textContent='Power of t (n):'; paramInput.placeholder='e.g., 1, 2';
+  } else if (type==='periodic') {
+    paramSection.style.display='block'; paramLabel.textContent='Period (T):'; paramInput.placeholder='e.g., 2π';
+  } else {
+    paramSection.style.display='none'; paramInput.value='';
+  }
+}
+document.getElementById('transform-type').addEventListener('change',updateInputFields); updateInputFields();
+
+function showError(msg) {
+  document.getElementById('error-message').textContent=msg;
+  document.getElementById('error-message').classList.add('show');
+  document.getElementById('result-section').classList.remove('show');
+}
+function hideError(){document.getElementById('error-message').classList.remove('show');}
+
+function calculateTransform() {
+  hideError();
+  const type=document.getElementById('transform-type').value;
+  const funcInput=document.getElementById('function-input').value.trim();
+  const paramInput=document.getElementById('param-input').value.trim();
+  if(!funcInput){showError('Please enter a function');return;}
+  try {
+    let result,steps;
+    switch(type){
+      case 'basic':({result,steps}=calculateBasic(funcInput));break;
+      case 'shifted':({result,steps}=calculateShifted(funcInput,paramInput));break;
+      case 'derivative':({result,steps}=calculateDerivative(funcInput));break;
+      case 'integral':({result,steps}=calculateIntegral(funcInput));break;
+      case 'multiplication':({result,steps}=calculateMultiplication(funcInput,paramInput));break;
+      case 'division':({result,steps}=calculateDivision(funcInput));break;
+      case 'convolution':({result,steps}=calculateConvolution(funcInput));break;
+      case 'periodic':({result,steps}=calculatePeriodic(funcInput,paramInput));break;
+      default:showError('Invalid transform type');return;
+    }
+    displayResult(result,steps);
+  }catch(error){
+    showError('Error calculating transform. Please check your input format.');
+  }
+}
+function calculateBasic(func){
+  let result='',steps=[];
+  if(func.match(/^t\^(\d+)$/)){
+    const n=parseInt(func.match(/^t\^(\d+)$/)[1]);
+    result=`${factorial(n)}/s^${n+1}`;
+    steps.push("Step 1: Write the formula for Laplace transform of tⁿ");
+    steps.push(`Step 2: Use L{tⁿ} = n!/s^(n+1)`);
+    steps.push(`Step 3: Substitute n = ${n}: L{t^${n}} = ${factorial(n)}/s^${n+1}`);
+  } else if(func.match(/^e\^\((-?\d+)t\)$/)){
+    const a=func.match(/^e\^\((-?\d+)t\)$/)[1];
+    result=`1/(s-${a})`;
+    steps.push("Step 1: Write the formula for Laplace transform of e^(at)");
+    steps.push(`Step 2: Use L{e^(at)} = 1/(s - a)`);
+    steps.push(`Step 3: Substitute a = ${a}: L{e^(${a}t)} = 1/(s-${a})`);
+  } else if(func.match(/^sin\((\d+)t\)$/)){
+    const a=func.match(/^sin\((\d+)t\)$/)[1];
+    result=`${a}/(s²+${parseInt(a)**2})`;
+    steps.push("Step 1: Write the formula for Laplace transform of sin(at)");
+    steps.push(`Step 2: Use L{sin(at)} = a/(s² + a²)`);
+    steps.push(`Step 3: Substitute a = ${a}: L{sin(${a}t)} = ${a}/(s² + ${parseInt(a)**2})`);
+  } else if(func.match(/^cos\((\d+)t\)$/)){
+    const a=func.match(/^cos\((\d+)t\)$/)[1];
+    result=`s/(s²+${parseInt(a)**2})`;
+    steps.push("Step 1: Write the formula for Laplace transform of cos(at)");
+    steps.push(`Step 2: Use L{cos(at)} = s/(s² + a²)`);
+    steps.push(`Step 3: Substitute a = ${a}: L{cos(${a}t)} = s/(s² + ${parseInt(a)**2})`);
+  } else if(func==='t'){
+    result='1/s²'; 
+    steps.push("Step 1: Use L{t} = 1/s² (standard Laplace result)");
+  } else if(func==='1'){
+    result='1/s'; 
+    steps.push("Step 1: Use L{1} = 1/s (standard Laplace result)");
+  } else{throw new Error('Unsupported function format');}
+  return {result,steps};
+}
+function calculateShifted(func,a){
+  if(!a)throw new Error('Please enter shift value (a)');
+  const {result:basicResult,steps:basicSteps}=calculateBasic(func);
+  const result=`e^(-${a}s) · ${basicResult}`;
+  const steps=[
+    "Step 1: Find Laplace transform of the underlying function without shift:",
+    ...basicSteps,
+    `Step 2: Use 2nd Shifting Theorem: L{u(t-a)f(t-a)} = e^(-as) · L{f(t)}`,
+    `Step 3: Substitute a = ${a}: L{u(t-${a})${func.replace(/t/g,`(t-${a})`)}} = e^(-${a}s) · ${basicResult}`
+  ];
+  return{result,steps};
+}
+function calculateDerivative(func){
+  const {result:basicResult,steps:basicSteps}=calculateBasic(func);
+  const result=`s · ${basicResult} - f(0)`;
+  const steps=[
+    "Step 1: Find Laplace transform F(s) of f(t):",
+    ...basicSteps,
+    "Step 2: Use L{f'(t)} = sF(s) - f(0)",
+    `Step 3: Substitute F(s) and f(0) to get L{f'(t)} = s · ${basicResult} - f(0)`,
+    "Step 4: For second derivative: L{f''(t)} = s²F(s) - sf(0) - f'(0)"
+  ];
+  return{result,steps};
+}
+function calculateIntegral(func){
+  const {result:basicResult,steps:basicSteps}=calculateBasic(func);
+  const result=`${basicResult}/s`;
+  const steps=[
+    "Step 1: Find Laplace transform F(s) of f(t):",
+    ...basicSteps,
+    "Step 2: Use L{∫f(t)dt} = F(s)/s",
+    `Step 3: Therefore, L{∫${func}dt} = ${basicResult}/s`
+  ];
+  return{result,steps};
+}
+function calculateMultiplication(func,n){
+  if(!n){throw new Error('Please enter power of t (n)');}
+  const {result:basicResult,steps:basicSteps}=calculateBasic(func);
+  const result=`(-1)^${n} · d^${n}/ds^${n}[${basicResult}]`;
+  const steps=[
+    "Step 1: Find Laplace transform F(s) of f(t):",
+    ...basicSteps,
+    `Step 2: Use L{t^n · f(t)} = (-1)^n · d^n/ds^n[F(s)]`,
+    `Step 3: Substitute n = ${n} to get L{t^${n} · ${func}} = (-1)^${n} · d^${n}/ds^${n}[${basicResult}]`,
+    `Step 4: Take the ${n}th derivative of F(s) with respect to s`
+  ];
+  return{result,steps};
+}
+function calculateDivision(func){
+  const {result:basicResult,steps:basicSteps}=calculateBasic(func);
+  const result=`∫[${basicResult}]ds from s to ∞`;
+  const steps=[
+    "Step 1: Find Laplace transform F(s) of f(t):",
+    ...basicSteps,
+    "Step 2: Use L{f(t)/t} = ∫F(s)ds from s to ∞",
+    `Step 3: Therefore, L{${func}/t} = ∫[${basicResult}]ds from s to ∞`
+  ];
+  return{result,steps};
+}
+function calculateConvolution(func){
+  const result=`F(s) · G(s)`;
+  const steps=[
+    "Step 1: Find Laplace transform of each function: L{f(t)} = F(s), L{g(t)} = G(s)",
+    "Step 2: Use Convolution Theorem: L{f(t) * g(t)} = F(s) · G(s)",
+    "Step 3: Calculate each transform and multiply results"
+  ];
+  return{result,steps};
+}
+function calculatePeriodic(func,T){
+  if(!T)throw new Error('Please enter period (T)');
+  const result=`[1/(1 - e^(-${T}s))] · ∫[f(t)e^(-st)]dt from 0 to ${T}`;
+  const steps=[
+    `Step 1: Write the general formula for periodic functions with period T = ${T}:`,
+    `Step 2: L{f(t)} = [1/(1 - e^(-${T}s))] · ∫f(t)e^(-st)dt from 0 to ${T}`,
+    `Step 3: Evaluate the integral of f(t)e^(-st) from 0 to ${T} and multiply by 1/(1 - e^(-${T}s))`
+  ];
+  return{result,steps};
+}
+function factorial(n){if(n<=1)return 1;return n*factorial(n-1);}
+function displayResult(result,steps){
+  document.getElementById('result-formula').textContent=`L{f(t)} = ${result}`;
+  const stepsContainer=document.getElementById('result-steps');
+  stepsContainer.innerHTML = `<strong>Step by Step Solution:</strong>`;
+  steps.forEach((step,index)=>{
+    const stepDiv = document.createElement('div');
+    stepDiv.className='step';
+    stepDiv.innerHTML=`<span class="step-number">${index+1}</span>${step}`;
+    stepsContainer.appendChild(stepDiv);
+  });
+  document.getElementById('result-section').classList.add('show');
+}
+</script>
+</body>
+</html>
